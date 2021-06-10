@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  web:
+    image: pickleshb/vwx_status:latest
+    container_name: 'vwx_status'
+    ports:
+      - 306:300
+    restart: always
+    env_file:
+      - ~/envs/vwx_status-env
+    depends_on:
+      - db
+
+  db:
+    image: arm32v7/postgres:latest
+    container_name: 'vwx_status_db'
+    restart: always
+    env_file:
+      - ~/envs/vwx_status-env
+    expose:
+      - 5432
+    volumes:
+      - data:/var/lib/postgresql/data
+
+  ofelia:
+    image: 'mcuadros/ofelia:latest'
+    restart: always
+    command: daemon --docker
+    volumes:
+      - ./ofelia-config.ini:/etc/ofelia/config.ini
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./logs:/tmp/logs
+    depends_on:
+      - web
+
+volumes:
+    # NOTE: Change /path/to/data to a directory on your local machine
+    # Persistent data, stored external to the container(s)
+    data:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            # This directory specified where InvenTree data are stored "outside" the docker containers
+            # Change this path to a local system path where you want InvenTree data stored
+            device: /home/pi/docker_data/vwx_status
