@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+
+{% block main %}
+
+<div class="w-full h-full d-flex align-items-center justify-content-center">
+    <div class="row">
+          <div class="col-12" id="form-background">
+            <h4 class="light grey-text text-darken-3">Login</h4>
+            {% if form.errors %}
+              <p class="text-danger">Username or password incorrect.
+              Please try again</p>
+            {% endif %}
+
+              <form action="." method="post">
+                  {% csrf_token %}
+                  <div class="form-group">
+                      <label for="{{ form.username.name }}" class="required">Username</label>
+                      <input type="text" name="{{ form.username.name }}" class="form-control" placeholder="Username" required="required">
+                  </div>
+                  <div class="form-group">
+                      <label for="{{ form.password.name }}" class="required">Password</label>
+                      <input type="password" name="{{ form.password.name }}" class="form-control" placeholder="Password" required="required">
+                  </div>
+                  <input class="btn btn-primary btn-block" type="submit" value="Sign in">
+                  <input type="hidden" name="next" value="{{ next }}">
+              </form>
+          </div>
+        </div>
+    </div>
+
+{% endblock %}
