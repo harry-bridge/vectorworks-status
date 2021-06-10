@@ -1,0 +1,12 @@
+.idea
+.DS_Store
+__pycache__
+venv/
+
+db.sqlite3
+
+*.csv
+staticfiles/
+
+_bin/secrets.txt
+_bin/env.txt
