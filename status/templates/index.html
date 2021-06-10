@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load string_filters %}
+
+{% block main %}
+
+    <div class="container-fluid">
+        <div class="content">
+            <div class="center">
+                <img class="mobile-img" src="{% static 'imgs/vw-v.svg' %}" alt="vectorworks_logo">
+                <h1>Vectorworks License Server Status</h1>
+            </div>
+            <div class="row">
+                <div class="col-12 center">
+                    {% if all_servers_up %}
+                        <h3><span class="text-success">Server online</span> - Last checked: {{ rlm_status.last_updated }}</h3>
+                    {% else %}
+                        <h3><span class="text-danger">Server offline</span></h3>
+
+                        {% if uptime_error %}
+                            <h3><span class="text-danger">Error getting server status</span> - try updating</h3>
+                        {% else %}
+                            {% if rlm_status.get_status == 'down' %}
+                                <h3><span class="text-danger">RLM server offline</span> - Last checked: {{ rlm_status.last_updated }}</h3>
+                            {% endif %}
+
+                            {% if port1_status.get_status == 'down' %}
+                                <h3><span class="text-danger">Access port 1 offline</span> - Last checked: {{ port1_status.last_updated }}</h3>
+                            {% endif %}
+
+                            {% if port2_status.get_status == 'down' %}
+                                <h3><span class="text-danger">Access port 2 offline</span> - Last checked: {{ port2_status.last_updated }}</h3>
+                            {% endif %}
+                        {% endif %}
+
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6 offset-md-3 col-sm-12">
+                    <table class="table table-striped">
+                        <tr>
+                            <th>Product</th>
+                            <th>Version</th>
+                            <th>Count</th>
+                            <th>In Use</th>
+                        </tr>
+                        {% for item in license_info.values %}
+                            <tr>
+                                <td>{{ item.product|title|to_space:"_" }}</td>
+                                <td>{{ item.ver }}</td>
+                                <td>{{ item.count }}</td>
+                                <td>{{ item.inuse }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+{#            <div class="col-12 center">#}
+{#                <h3>Current users</h3>#}
+{#                <p>{{ current_users }}#}
+{#            </div>#}
+        <br>
+        <div class="row">
+            <div class="col-12 center">
+                <a class="btn btn-primary btn-lg" href="{% url 'update_index' %}">Update Now</a>
+            </div>
+        </div>
+        </div>
+
+    </div>
+{% endblock %}
