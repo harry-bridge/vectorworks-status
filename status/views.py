@@ -8,6 +8,7 @@ from django.core.management import call_command
 
 from status import models
 from status.rlm_scraper import RLMScrape
+from status.port_check import PortCheck
 
 
 class Login(auth_views.LoginView):
@@ -21,27 +22,13 @@ class Logout(auth_views.LogoutView):
     template_name = 'registration/logout.html'
 
 
-def extract_info_from_rml(context, rml_info):
-    context['current_users'] = 0
-
-    for key, value in rml_info.items():
-        context['current_users'] = max(context['current_users'], int(value['inuse']))
-        context['last_updated'] = value['last_updated']
-
-    return context
-
-
 class Index(LoginRequiredMixin, generic.TemplateView):
     template_name = 'index.html'
-    # template_name = 'starter-template.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        rlm = RLMScrape()
-        context['license_info'] = rlm.read_rlm_info_log()
-        extract_info_from_rml(context, context['license_info'])
-        # context['server_online'] = rlm.read_rlm_server_log()
+        context['license_info'] = models.RlmInfo().get_latest_info_dict()
 
         context['uptime_error'] = False
         context['rlm_status'] = models.UptimeTest.objects.get(name="vectorworks_server").get_last_uptime()
@@ -61,22 +48,13 @@ class Index(LoginRequiredMixin, generic.TemplateView):
             context['all_servers_up'] = False
             context['uptime_error'] = True
 
-        # if rlm_status.get_status() == 'down':
-        #     context['server_status'] = 'down'
-
-
-
-
-        # context['rlm_server_status'] = models.UptimeTest.objects.get(name="vectorworks_server").get_last_uptime()
-
-
         return context
 
 
 class UpdateIndex(LoginRequiredMixin, generic.View):
     def get(self, request):
-        call_command('port_check')
-        call_command('rlm_beat')
+        PortCheck().check_ports_multithread()
+        RLMScrape().beat_task()
 
         return HttpResponseRedirect(reverse_lazy('index'))
 
