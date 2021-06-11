@@ -1,18 +1,9 @@
 from django.apps import AppConfig
 from django.core.exceptions import AppRegistryNotReady
+from django.db import connection
 import time
 
 import status.tasks
-
-# while 1:
-#     try:
-#         import status.port_check
-#         print('Apps not ready')
-#         break
-#     except AppRegistryNotReady:
-#         pass
-#
-#     time.sleep(1)
 
 
 class VectorworksStatusConfig(AppConfig):
@@ -26,13 +17,19 @@ class VectorworksStatusConfig(AppConfig):
         self.clear_queue()
         self.start_background_tasks()
 
+    @staticmethod
+    def db_table_exists(table_name):
+        return table_name in connection.introspection.table_names()
+
     def clear_queue(self):
         try:
             from django_q.models import OrmQ
         except AppRegistryNotReady:
             return
 
-        OrmQ.objects.all().delete()
+        if self.db_table_exists('django_q_ormq'):
+            if OrmQ.objects.all().count():
+                OrmQ.objects.all().delete()
 
     def clear_sheduled_tasks(self):
         try:
@@ -40,7 +37,9 @@ class VectorworksStatusConfig(AppConfig):
         except AppRegistryNotReady:
             return
 
-        Schedule.objects.all().delete()
+        if self.db_table_exists('django_q_schedule'):
+            if Schedule.objects.all().count():
+                Schedule.objects.all().delete()
 
     def start_background_tasks(self):
         try:
