@@ -1,7 +1,6 @@
 import urllib.error
 from concurrent.futures import ThreadPoolExecutor
 import threading
-from django.core.management.base import BaseCommand, CommandError
 import socket
 import mechanize
 from bs4 import BeautifulSoup
@@ -11,16 +10,12 @@ from status import models
 up = 0
 down = 1
 
-class Command(BaseCommand):
+
+class PortCheck:
     _port_check_url = "https://portchecker.co/"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
         self._settings = models.ScraperSettings().get_settings()
-        # print(ssl.get_default_verify_paths())
-
-    def handle(self, *args, **options):
-        self.check_ports()
 
     @staticmethod
     def _get_site_ip(hostname):
@@ -86,7 +81,7 @@ class Command(BaseCommand):
 
         self._log_uptime_result(port_test, result)
 
-    def check_ports(self):
+    def check_ports_multithread(self):
         with ThreadPoolExecutor(max_workers=3) as executor:
             print("Testing internal ports")
             for test in models.UptimeTest().get_all_internal_tests():
@@ -96,3 +91,12 @@ class Command(BaseCommand):
             print("Testing external ports")
             for test in models.UptimeTest().get_all_external_tests():
                 executor.submit(self._external_port_check, test)
+
+    def check_ports_singlethread(self):
+        print("Testing internal ports")
+        for test in models.UptimeTest().get_all_internal_tests():
+            self._internal_port_check(test)
+
+        print("Testing external ports")
+        for test in models.UptimeTest().get_all_external_tests():
+            self._external_port_check(test)
