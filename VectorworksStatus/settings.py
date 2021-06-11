@@ -18,6 +18,9 @@ from sentry_sdk.integrations.django import DjangoIntegration
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "VectorworksStatus.settings")
+# os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -31,7 +34,7 @@ SECRET_KEY = 'django-insecure-1f3r!b3+m*e2u3b1n+dcdc1k&hc31%rj5mbk6qh=b2&rmb670r
 if DEBUG:
     ALLOWED_HOSTS = ['*']
 else:
-    ALLOWED_HOSTS = ['vectorworks.hjb.io']
+    ALLOWED_HOSTS = ['vectorworks.hjb.io', 'vwx-status.hjb.io']
 
 # Application definition
 INSTALLED_APPS = [
@@ -41,7 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'status'
+    'status.apps.StatusConfig',
+    'VectorworksStatus.apps.VectorworksStatusConfig',
+    'django_q'
 ]
 
 MIDDLEWARE = [
@@ -147,6 +152,18 @@ if not DEBUG:
         send_default_pii=True
     )
 
+Q_CLUSTER = {
+    'name': 'VectorworksStatus',
+    'workers': 4,
+    'recycle': 500,
+    'timeout': 120,
+    'retry': 240,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default',
+    'sync': False,
+}
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -158,3 +175,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+RLM_USER = os.getenv('RLM_USERNAME')
+RLM_PASS = os.getenv('RLM_PASSWORD')
