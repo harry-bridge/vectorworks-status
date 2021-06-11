@@ -26,7 +26,7 @@ services:
     image: pickleshb/vwx_status:latest
     container_name: 'vwx_status_worker'
     restart: unless-stopped
-    entrypoint: /code/_bin/docker_run.sh
+    entrypoint: /code/_bin/worker_run.sh
     env_file:
       - ~/envs/vwx_status-env
     depends_on:

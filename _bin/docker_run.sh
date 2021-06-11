@@ -4,7 +4,10 @@
 python manage.py wait_for_db
 sleep 10
 
-python manage.py migrate                  # Apply database migrations
+# Apply database migrations
+python manage.py migrate
+# Collect our static media.
+#python manage.py collectstatic --noinput
 
 # Start Gunicorn processes
 echo Starting Gunicorn.

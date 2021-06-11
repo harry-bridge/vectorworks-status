@@ -14,6 +14,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 RUN chmod +x /code/_bin/docker_run.sh
+RUN chmod +x /code/_bin/worker_run.sh
 
 # Install pip
 RUN apt-get update -y
