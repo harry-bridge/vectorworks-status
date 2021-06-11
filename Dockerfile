@@ -26,20 +26,4 @@ RUN python3 -m pip install -r requirements.txt
 # Collect our static media.
 RUN python3 /code/manage.py collectstatic --noinput
 
-# setup cron job to update server status
-#RUN apt-get update && apt-get -y install cron
-
-# Copy hello-cron file to the cron.d directory
-#COPY _bin/beat_cron /etc/cron.d/beat_cron
-
-# Give execution rights on the cron job
-#RUN chmod 0644 /etc/cron.d/beat_cron
-
-# Apply cron job
-#RUN crontab /etc/cron.d/beat_cron
-
-# Create the log file to be able to run tail
-#RUN touch /var/log/cron.log
-
 CMD ["/code/_bin/docker_run.sh"]
-#ENTRYPOINT ["tail", "-f", "/dev/null"]

@@ -5,7 +5,7 @@ services:
     container_name: 'vwx_status'
     ports:
       - 306:300
-    restart: always
+    restart: unless-stopped
     env_file:
       - ~/envs/vwx_status-env
     depends_on:
@@ -14,7 +14,7 @@ services:
   db:
     image: arm32v7/postgres:latest
     container_name: 'vwx_status_db'
-    restart: always
+    restart: unless-stopped
     env_file:
       - ~/envs/vwx_status-env
     expose:
@@ -22,16 +22,16 @@ services:
     volumes:
       - data:/var/lib/postgresql/data
 
-  ofelia:
-    image: 'mcuadros/ofelia:latest'
-    restart: always
-    command: daemon --docker
-    volumes:
-      - ./ofelia-config.ini:/etc/ofelia/config.ini
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./logs:/tmp/logs
+  q-worker:
+    image: pickleshb/vwx_status:latest
+    container_name: 'vwx_status_worker'
+    restart: unless-stopped
+    entrypoint: /code/_bin/docker_run.sh
+    env_file:
+      - ~/envs/vwx_status-env
     depends_on:
       - web
+      - db
 
 volumes:
     # NOTE: Change /path/to/data to a directory on your local machine
