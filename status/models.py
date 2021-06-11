@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from datetime import datetime
 
 
 class UptimeTest(models.Model):
@@ -35,6 +36,25 @@ class UptimeTest(models.Model):
         return self.name
 
 
+def _get_age_info(age: float, minutes_for_warning=3):
+    hours, hr = divmod(age, 60 * 60)
+    mins, secs = divmod(hr, 60)
+
+    text_class = 'text-success'
+    if age > 60 * 60:
+        age_formatted = "{}h {}m".format(int(hours), int(mins))
+        text_class = 'text-danger'
+    elif age > 60:
+        age_formatted = "{}m".format(int(mins))
+        # a message that is some minutes old gets yellow text to indicate it is a bit out of date
+        if age > minutes_for_warning * 60:
+            text_class = 'text-secondary'
+    else:
+        age_formatted = "{}s".format(int(secs))
+
+    return {"text_class": text_class, "age_formatted": age_formatted}
+
+
 class UptimeHistory(models.Model):
     class Meta:
         verbose_name_plural = 'Uptime history'
@@ -58,7 +78,20 @@ class UptimeHistory(models.Model):
     def last_updated(self):
         ran_at = timezone.localtime(self.test_ran_at)
         return ran_at.strftime("%H:%M, %d %b %Y")
-        # return self.test_ran_at
+
+    @property
+    def age_text_col(self):
+        age = (timezone.now() - self.test_ran_at).total_seconds()
+        return _get_age_info(age)['text_class']
+
+    @property
+    def age_str(self):
+        age = (timezone.now() - self.test_ran_at).total_seconds()
+        if age < 2 * 60 * 60:
+            # less than 2 hours old then return age string
+            return "{} ago".format(_get_age_info(age)['age_formatted'])
+        else:
+            return self.test_ran_at.strftime("%H:%M, %d %b")
 
     def __str__(self):
         return self.test.name + " - " + self.get_uptime_result_display()
@@ -87,6 +120,19 @@ class RlmInfo(models.Model):
             prod['ver'] = product.version
             prod['count'] = product.count
             prod['inuse'] = product.in_use
+
+            if product.in_use == product.count:
+                prod['inuse_text_class'] = 'text-danger'
+            elif product.in_use >= int(product.count * 0.8):
+                prod['inuse_text_class'] = 'text-secondary'
+            else:
+                prod['inuse_text_class'] = ''
+
+            age = (timezone.now() - product.last_updated).total_seconds()
+            age_info = _get_age_info(age)
+
+            prod['text_class'] = age_info['text_class']
+            prod['timedelta'] = age_info["age_formatted"]
 
         return info
 

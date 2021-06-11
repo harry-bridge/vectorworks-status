@@ -12,7 +12,7 @@
             <div class="row">
                 <div class="col-12 center">
                     {% if all_servers_up %}
-                        <h3><span class="text-success">Server online</span> - Last checked: {{ rlm_status.last_updated }}</h3>
+                        <h3><span class="text-success">Server online</span> - Last checked: <span class="{{ rlm_status.age_text_col }}">{{ rlm_status.age_str }}</span></h3>
                     {% else %}
                         <h3><span class="text-danger">Server offline</span></h3>
 
@@ -42,23 +42,21 @@
                             <th>Version</th>
                             <th>Count</th>
                             <th>In Use</th>
+                            <th class="hidden-sm-and-down">Last Checked</th>
                         </tr>
                         {% for item in license_info.values %}
                             <tr>
                                 <td>{{ item.product|title|to_space:"_" }}</td>
                                 <td>{{ item.ver }}</td>
                                 <td>{{ item.count }}</td>
-                                <td>{{ item.inuse }}</td>
+                                <td class="{{ item.inuse_text_class }}" >{{ item.inuse }}</td>
+                                <td class="{{ item.text_class }} hidden-sm-and-down">{{ item.timedelta }}</td>
                             </tr>
                         {% endfor %}
                     </table>
                 </div>
             </div>
 
-{#            <div class="col-12 center">#}
-{#                <h3>Current users</h3>#}
-{#                <p>{{ current_users }}#}
-{#            </div>#}
         <br>
         <div class="row">
             <div class="col-12 center">
