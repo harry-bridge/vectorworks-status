@@ -1,11 +1,8 @@
 from django.core.exceptions import AppRegistryNotReady
 from django.db.utils import OperationalError, ProgrammingError
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.core.management import call_command
-
-# from status.port_check import PortCheck
-# from status import port_check
-# import status.port_check
 
 
 def schedule_task(taskname, **kwargs):
@@ -58,7 +55,7 @@ def heartbeat():
     except AppRegistryNotReady:
         return
 
-    threshold = datetime.now() - timedelta(minutes=30)
+    threshold = timezone.now() - timedelta(minutes=30)
 
     # Delete heartbeat results more than half an hour old,
     # otherwise they just create extra noise
@@ -82,7 +79,7 @@ def delete_successful_tasks():
         print("Could not start background tasks - App registry not ready")
         return
 
-    threshold = datetime.now() - timedelta(days=10)
+    threshold = timezone.now() - timedelta(days=7)
 
     results = Success.objects.filter(
         started__lte=threshold
@@ -120,3 +117,23 @@ def scrape_rlm_q_task():
 
     print('running rlm beat')
     RLMScrape().beat_task()
+
+
+def delete_old_uptime_history():
+    """
+    Delete uptime logs that are older than 7 days old
+    """
+
+    try:
+        from status import models
+    except AppRegistryNotReady:
+        print("Could not start background tasks - App registry not ready")
+        return
+
+    threshold = timezone.now() - timedelta(days=7)
+
+    results = models.UptimeHistory.objects.filter(
+        test_ran_at__lte=threshold
+    )
+
+    results.delete()

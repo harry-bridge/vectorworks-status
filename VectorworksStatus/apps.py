@@ -1,7 +1,6 @@
 from django.apps import AppConfig
 from django.core.exceptions import AppRegistryNotReady
 from django.db import connection
-import time
 
 import status.tasks
 
@@ -68,4 +67,9 @@ class VectorworksStatusConfig(AppConfig):
             'status.tasks.scrape_rlm_q_task',
             schedule_type=Schedule.MINUTES,
             minutes=5
+        )
+
+        status.tasks.schedule_task(
+            'status.tasks.delete_old_uptime_history',
+            schedule_type=Schedule.DAILY
         )
