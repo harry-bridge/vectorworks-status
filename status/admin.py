@@ -20,3 +20,8 @@ class UptimeHistoryAdmin(admin.ModelAdmin):
 
     # def get_readonly_fields(self, request, obj=None):
     #     return [f.name for f in self.model._meta.fields]
+
+
+@admin.register(models.RlmInfo)
+class RlmInfoAdmin(admin.ModelAdmin):
+    list_display = ['product', 'version', 'count', 'in_use', 'last_updated']
