@@ -17,7 +17,7 @@ class RLMScrape:
     def __init__(self):
         self._site_location = models.ScraperSettings().get_settings().rlm_address
         self._br = mechanize.Browser()
-        br.set_handle_robots(False)
+        self._br.set_handle_robots(False)
 
     @staticmethod
     def _get_last_updated_time():
@@ -68,7 +68,8 @@ class RLMScrape:
         for product, info in licence_info.items():
             defaults = {
                 'count': info['count'],
-                'in_use': info['inuse']
+                'in_use': info['inuse'],
+                'last_updated': timezone.now()
             }
 
             models.RlmInfo.objects.update_or_create(product=product, version=info['ver'], defaults=defaults)
