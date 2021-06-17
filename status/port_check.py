@@ -1,3 +1,4 @@
+import time
 import urllib.error
 from concurrent.futures import ThreadPoolExecutor
 import threading
@@ -13,6 +14,8 @@ down = 1
 
 class PortCheck:
     _port_check_url = "https://portchecker.co/"
+    _fails = 0
+    _max_runs = 2
 
     def __init__(self):
         self._settings = models.ScraperSettings().get_settings()
@@ -45,6 +48,7 @@ class PortCheck:
 
         except socket.timeout:
             result = down
+            self._fails += 1
             print("{} - ERROR".format(port_test.name))
 
         self._log_uptime_result(port_test, result)
@@ -78,19 +82,32 @@ class PortCheck:
         else:
             print("{} - ERROR".format(port_test.name))
             result = down
+            self._fails += 1
 
         self._log_uptime_result(port_test, result)
 
     def check_ports_multithread(self):
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            print("Testing internal ports")
-            for test in models.UptimeTest().get_all_internal_tests():
-                # self._internal_port_check(test)
-                executor.submit(self._internal_port_check, test)
+        _run_num = 1
+        while self._max_runs > 0:
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                print("Running test #{}".format(_run_num))
+                _run_num += 1
 
-            print("Testing external ports")
-            for test in models.UptimeTest().get_all_external_tests():
-                executor.submit(self._external_port_check, test)
+                print("Testing internal ports")
+                for test in models.UptimeTest().get_all_internal_tests():
+                    # self._internal_port_check(test)
+                    executor.submit(self._internal_port_check, test)
+
+                print("Testing external ports")
+                for test in models.UptimeTest().get_all_external_tests():
+                    executor.submit(self._external_port_check, test)
+
+            if self._fails > 0:
+                time.sleep(10)
+                self._max_runs -= 1
+                continue
+            else:
+                break
 
     def check_ports_singlethread(self):
         print("Testing internal ports")
