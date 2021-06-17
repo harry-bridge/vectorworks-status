@@ -157,3 +157,26 @@ class ScraperSettings(models.Model):
 
     def __str__(self):
         return "Scraper Settings"
+
+
+class MaintenancePeriod(models.Model):
+    message = models.TextField()
+    is_active = models.BooleanField(default=True)
+    start_datetime = models.DateTimeField(default=timezone.now)
+    default_end = timezone.now() + timezone.timedelta(hours=3)
+    end_datetime = models.DateTimeField(default=default_end)
+
+    @property
+    def start_formatted(self):
+        return self.start_datetime.strftime("%H:%M, %d %b")
+
+    @property
+    def end_formatted(self):
+        return self.end_datetime.strftime("%H:%M, %d %b")
+
+    @staticmethod
+    def get_active_maintenance():
+        return MaintenancePeriod.objects.all().filter(end_datetime__gte=timezone.now(), is_active=True).first()
+
+    def __str__(self):
+        return "Maintenance period at {}".format(self.start_datetime.strftime("%c"))

@@ -4,7 +4,6 @@ from status import models
 
 @admin.register(models.ScraperSettings)
 class ScraperSettingsAdmin(admin.ModelAdmin):
-
     def has_add_permission(self, request):
         return self.model.objects.count() == 0
 
@@ -25,3 +24,9 @@ class UptimeHistoryAdmin(admin.ModelAdmin):
 @admin.register(models.RlmInfo)
 class RlmInfoAdmin(admin.ModelAdmin):
     list_display = ['product', 'version', 'count', 'in_use', 'last_updated']
+
+
+@admin.register(models.MaintenancePeriod)
+class MaintenancePeriodAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return self.model.objects.count() == 0

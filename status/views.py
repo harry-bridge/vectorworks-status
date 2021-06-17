@@ -30,6 +30,8 @@ class Index(LoginRequiredMixin, generic.TemplateView):
 
         context['license_info'] = models.RlmInfo().get_latest_info_dict()
 
+        context['active_maintenance'] = models.MaintenancePeriod.get_active_maintenance()
+
         context['uptime_error'] = False
         context['rlm_status'] = models.UptimeTest.objects.get(name="vectorworks_server").get_last_uptime()
         context['port1_status'] = models.UptimeTest.objects.get(name="rlm_port_1").get_last_uptime()

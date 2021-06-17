@@ -11,6 +11,14 @@
                 <img class="mobile-img" src="{% static 'imgs/vw-v.svg' %}" alt="vectorworks_logo">
                 <h1>Vectorworks License Server Status</h1>
             </div>
+
+            {% if active_maintenance %}
+                <div class="col-12 center">
+                    <h3 class="text-secondary no-margin-bottom">Maintenance scheduled from: {{ active_maintenance.start_formatted }}, until: {{ active_maintenance.end_formatted }}</h3>
+                    <h4 class="text-secondary no-margin-top">{{ active_maintenance.message }}</h4>
+                </div>
+            {% endif %}
+
             <div class="row">
                 <div class="col-12 center">
                     {% if all_servers_up %}
