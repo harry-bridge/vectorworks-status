@@ -8,4 +8,4 @@ down = 1
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        PortCheck().check_ports()
+        PortCheck().check_ports_multithread()

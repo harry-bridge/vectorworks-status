@@ -1,6 +1,6 @@
 import time
 import urllib.error
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import socket
 import mechanize
@@ -88,26 +88,41 @@ class PortCheck:
 
     def check_ports_multithread(self):
         _run_num = 1
-        while self._max_runs > 0:
-            with ThreadPoolExecutor(max_workers=3) as executor:
-                print("Running test #{}".format(_run_num))
-                _run_num += 1
+        _tasks = list()
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            print("Running test #{}".format(_run_num))
+            _run_num += 1
 
-                print("Testing internal ports")
-                for test in models.UptimeTest().get_all_internal_tests():
-                    # self._internal_port_check(test)
-                    executor.submit(self._internal_port_check, test)
+            print("Testing internal ports")
+            for test in models.UptimeTest().get_all_internal_tests():
+                # self._internal_port_check(test)
+                _tasks.append(executor.submit(self._internal_port_check, test))
 
-                print("Testing external ports")
-                for test in models.UptimeTest().get_all_external_tests():
-                    executor.submit(self._external_port_check, test)
+            print("Testing external ports")
+            for test in models.UptimeTest().get_all_external_tests():
+                _tasks.append(executor.submit(self._external_port_check, test))
 
-            if self._fails > 0:
-                time.sleep(10)
-                self._max_runs -= 1
-                continue
+        for future in as_completed(_tasks):
+            # user = _tasks[future]
+            # print(future)
+            try:
+                data = future.result()
+                print("Task finished, data: {}".format(data))
+            except Exception as exc:
+                print('Task generated an exception: {}'.format(exc))
+                # any unhandled exceptions then increase the fail count
+                self._fails += 1
             else:
-                break
+                pass
+                # print("{} is in {} groups".format('user', len('data')))
+
+        print("Test fails: {}".format(self._fails))
+        if self._fails > 0:
+            if self._max_runs > 0:
+                self._fails = 0
+                self._max_runs -= 1
+                time.sleep(10)
+                self.check_ports_multithread()
 
     def check_ports_singlethread(self):
         print("Testing internal ports")
