@@ -28,7 +28,8 @@ class RLMScrape:
         try:
             response = self._br.open(urljoin(self._site_location, 'goforms/login_process'), timeout=5)
             self._br._factory.is_html = True
-        except mechanize.HTTPError:
+        except Exception as exc:
+            print("Browser open failed with exception: {}".format(exc))
             self._server_online = False
             return
 
