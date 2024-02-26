@@ -1,8 +1,6 @@
 # Start with ARM base image
-FROM balenalib/raspberry-pi-python:3.6-latest-build
-
-# Ubuntu 18.04 base image
-#FROM amd64/ubuntu:18.04
+#FROM balenalib/raspberry-pi-python:3.6-latest-build
+FROM python:3.10
 
 # Create directorues
 RUN mkdir /code
@@ -13,18 +11,16 @@ COPY . /code
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN chmod +x /code/_bin/docker_run.sh
-RUN chmod +x /code/_bin/worker_run.sh
+RUN chmod +x /code/docker/docker_run.sh
+RUN chmod +x /code/docker/worker_run.sh
 
 # Install pip
-RUN apt-get update -y
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3
+RUN pip install -U pip setuptools wheel
 
 # Install requirements
-RUN python3 -m pip install --upgrade setuptools wheel
-RUN python3 -m pip install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Collect our static media.
 RUN python3 /code/manage.py collectstatic --noinput
 
-CMD ["/code/_bin/docker_run.sh"]
+CMD ["/code/docker/docker_run.sh"]
