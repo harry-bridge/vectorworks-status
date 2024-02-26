@@ -25,3 +25,7 @@
 .no-margin-bottom {
   margin-bottom: 0 !important;
 }
+
+.table-pad td, .table-pad th {
+  padding: 12px 15px;
+}

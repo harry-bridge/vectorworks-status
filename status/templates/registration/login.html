@@ -3,8 +3,8 @@
 
 {% block main %}
 
-<div class="w-full h-full d-flex align-items-center justify-content-center">
-    <div class="row">
+<div class="w-auto vh-100 d-flex align-items-center justify-content-center">
+    <div class="row w-25">
           <div class="col-12" id="form-background">
             <h4 class="light grey-text text-darken-3">Login</h4>
             {% if form.errors %}
@@ -14,11 +14,11 @@
 
               <form action="." method="post">
                   {% csrf_token %}
-                  <div class="form-group">
+                  <div class="mb-3">
                       <label for="{{ form.username.name }}" class="required">Username</label>
                       <input type="text" name="{{ form.username.name }}" class="form-control" placeholder="Username" required="required">
                   </div>
-                  <div class="form-group">
+                  <div class="mb-3">
                       <label for="{{ form.password.name }}" class="required">Password</label>
                       <input type="password" name="{{ form.password.name }}" class="form-control" placeholder="Password" required="required">
                   </div>
