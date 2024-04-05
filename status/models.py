@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Count, Max
 from django.utils import timezone
 from datetime import datetime
 
@@ -138,6 +139,31 @@ class RlmInfo(models.Model):
 
     def __str__(self):
         return f"{self.product}, {self.in_use} in use at {self.last_updated}"
+
+
+class UserLicenseUsage(models.Model):
+    """
+    Holds information about what users have checked out a license and when
+    """
+    class Meta:
+        verbose_name = 'Licence Usage'
+        verbose_name_plural = 'License Usages'
+
+    user_name = models.CharField(max_length=100)
+    host_name = models.CharField(max_length=100)
+    version = models.CharField(max_length=100)
+    checkout_stamp = models.DateTimeField()
+
+    @staticmethod
+    def get_version_for_user_date(user, stamp):
+        return UserLicenseUsage.objects.filter(user_name=user, checkout_stamp=stamp).first().version
+
+    @staticmethod
+    def top_users():
+        return UserLicenseUsage.objects.values('user_name').annotate(use_count=Count('user_name'), last_checkout=Max('checkout_stamp')).order_by('-use_count')
+
+    def __str__(self):
+        return f"User: {self.user_name}, Host: {self.host_name} at {self.checkout_stamp.strftime('%d/%b/%Y %H:%M')}"
 
 
 class ScraperSettings(models.Model):

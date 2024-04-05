@@ -67,3 +67,13 @@ class IsUpPage(generic.View):
             return HttpResponseRedirect(reverse_lazy('index'))
         else:
             return HttpResponse(status=500)
+
+
+class LicenseUsageList(generic.ListView):
+    model = models.UserLicenseUsage
+    context_object_name = 'usage_list'
+
+    template_name = 'license_usage.html'
+
+    def get_queryset(self):
+        return models.UserLicenseUsage.top_users()

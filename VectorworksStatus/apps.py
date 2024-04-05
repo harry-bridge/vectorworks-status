@@ -73,3 +73,8 @@ class VectorworksStatusConfig(AppConfig):
             'status.tasks.delete_old_uptime_history',
             schedule_type=Schedule.DAILY
         )
+
+        status.tasks.schedule_task(
+            'status.tasks.delete_old_license_usage_data',
+            schedule_type=Schedule.DAILY
+        )

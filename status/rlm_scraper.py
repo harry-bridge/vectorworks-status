@@ -1,13 +1,8 @@
-import os
 from bs4 import BeautifulSoup
-import requests
 from urllib.parse import urljoin
 import mechanize
 from django.conf import settings
-# from pathlib import Path
-# import csv
-# from datetime import datetime
-import time
+from datetime import datetime
 from django.utils import timezone
 
 from status import models
@@ -21,7 +16,6 @@ class RLMScrape:
 
     @staticmethod
     def _get_last_updated_time():
-        # return datetime.now().strftime("%H:%M %d/%b/%Y")
         return timezone.now()
 
     def _scrape_rlm_for_users(self):
@@ -61,10 +55,10 @@ class RLMScrape:
             licence_info[col[0].text.strip()] = dict()
             _info = licence_info[col[0].text.strip()]
             _info['ver'] = col[2].text.strip()
-            _info['count'] = col[4].text.strip()
-            _info['inuse'] = col[6].text.strip()
+            _info['count'] = int(col[4].text.strip())
+            _info['inuse'] = int(col[6].text.strip())
 
-        print(licence_info)
+        # print(licence_info)
 
         for product, info in licence_info.items():
             defaults = {
@@ -75,10 +69,42 @@ class RLMScrape:
 
             models.RlmInfo.objects.update_or_create(product=product, version=info['ver'], defaults=defaults)
 
+        # Get user info for licences in use
+        # First submit the first 'usage' form from the licences table
+        self._br.form = list(self._br.forms())[0]
+        resp = self._br.submit()
+        # print(resp.read())
+
+        soup = BeautifulSoup(resp.read(), 'html.parser')
+        users_table = soup.findAll("table")[0]
+
+        users_info = list()
+        for row in users_table.findAll("tr")[1:]:
+            col = row('td')
+            # Convert check out time from RLM to tz aware datetime
+            out_time = datetime.strptime(col[9].text.strip(), "%m/%d %H:%M").replace(year=datetime.now().year)
+            out_time = timezone.make_aware(out_time)
+
+            _info = {
+                "version": col[2].text.strip(),
+                "user": col[3].text.strip(),
+                "host": col[4].text.strip(),
+                "time_out": out_time
+            }
+            users_info.append(_info)
+
+        # print(users_info)
+
+        for info in users_info:
+            models.UserLicenseUsage.objects.get_or_create(user_name=info['user'],
+                                                          host_name=info['host'],
+                                                          version=info['version'],
+                                                          checkout_stamp=info['time_out'])
+
     def beat_task(self):
         self._scrape_rlm_for_users()
 
 
 if __name__ == '__main__':
     app = RLMScrape()
-    app._scrape_rlm_for_users()
+    app.beat_task()

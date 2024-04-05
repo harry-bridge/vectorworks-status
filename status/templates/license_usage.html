@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load model_tags %}
+
+{% block title %}Vectorworks Status | License Usage{% endblock %}
+
+{% block main %}
+    <div class="container-fluid">
+        <div class="content">
+            <div class="center pt-4 pb-3">
+                <h1>Licence Usage</h1>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-sm-12">
+                    <table class="table table-pad table-striped">
+                        <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Version</th>
+                            <th>Last Used</th>
+                            <th>Count</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in usage_list %}
+
+                            <tr>
+                                <td>{{ item.user_name | title }}</td>
+                                <td>{% get_last_usage_version item.user_name item.last_checkout %}</td>
+                                <td>{{ item.last_checkout }}</td>
+                                <td>{{ item.use_count }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 center">
+                    <a class="btn btn-primary btn-lg mx-3" href="{% url 'index' %}">Home</a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    {#    {{ usage_list }}#}
+{% endblock %}

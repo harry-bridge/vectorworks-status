@@ -26,6 +26,11 @@ class RlmInfoAdmin(admin.ModelAdmin):
     list_display = ['product', 'version', 'count', 'in_use', 'last_updated']
 
 
+@admin.register(models.UserLicenseUsage)
+class UserLicenseUsageAdmin(admin.ModelAdmin):
+    list_display = ['user_name', 'host_name', 'version', 'checkout_stamp']
+
+
 @admin.register(models.MaintenancePeriod)
 class MaintenancePeriodAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):

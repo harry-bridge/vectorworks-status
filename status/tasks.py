@@ -1,8 +1,7 @@
 from django.core.exceptions import AppRegistryNotReady
 from django.db.utils import OperationalError, ProgrammingError
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
-from django.core.management import call_command
 
 
 def schedule_task(taskname, **kwargs):
@@ -136,4 +135,27 @@ def delete_old_uptime_history():
         test_ran_at__lte=threshold
     )
 
+    results.delete()
+
+def delete_old_license_usage_data():
+    """
+    Delete license usage data that is more than 3 years old
+    """
+
+    try:
+        from status import models
+    except AppRegistryNotReady:
+        print("Could not start background tasks - App registry not ready")
+        return
+
+    # 365.2425 is the mean gregorian year, it's close enough for this
+    # leap years may cause it to be off by 1 day occasionally
+    threshold = timezone.now() - timedelta(days=365.2425*3)
+    # Set threshold time to midnight on the day
+    threshold = threshold.replace(hour=0, minute=0, second=0)
+
+    results = models.UserLicenseUsage.objects.filter(
+        checkout_stamp__lte=threshold
+    )
+    # remove items
     results.delete()
