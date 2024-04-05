@@ -1,6 +1,7 @@
 from django.urls import path
 
 from status import views
+from status import api
 
 urlpatterns = [
     path('', views.Index.as_view(), name='index'),
@@ -10,4 +11,8 @@ urlpatterns = [
 
     path('accounts/login/', views.Login.as_view(), name='login'),
     path('accounts/logout/', views.Logout.as_view(), name='logout'),
+
+    path('api/in-use-all', api.LicenseInUseListView.as_view({'get': 'list'}), name='api-license_in_use_all'),
+    path('api/in-use/<str:product>', api.LicenseInUseDetailView.as_view({'get': 'retrieve'}), name='api-license_in_use'),
+    path('api/license-usage-top', api.LicenseUsageTopListView.as_view({'get': 'list'}), name='api-license_in_use'),
 ]

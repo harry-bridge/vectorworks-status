@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'status.apps.StatusConfig',
+    'rest_framework',
+    'rest_framework.authtoken',
     'VectorworksStatus.apps.VectorworksStatusConfig',
     'django_q'
 ]
@@ -178,3 +180,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 RLM_USER = os.getenv('RLM_USERNAME')
 RLM_PASS = os.getenv('RLM_PASSWORD')
+
+
+REST_FRAMEWORK = {
+   'DEFAULT_AUTHENTICATION_CLASSES': (
+       'rest_framework.authentication.TokenAuthentication',
+   ),
+}
